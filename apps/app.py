@@ -30,12 +30,14 @@ def create_app():
   from apps.auth import views as auth_views
   from apps.detector import views as dt_views
   from apps.board import views as board_views
+  from apps.board import reply_views
 
   app.register_blueprint(crud_views.crud, url_prefix='/crud')
   app.register_blueprint(study_views.study, url_prefix='/study')
   app.register_blueprint(auth_views.auth, url_prefix='/auth')
   app.register_blueprint(dt_views.dt)
   app.register_blueprint(board_views.bp, url_prefix='/board')
+  app.register_blueprint(reply_views.reply, url_prefix='/reply')
 
   app.register_error_handler(404, page_not_found)
   app.register_error_handler(500, internal_server_error)

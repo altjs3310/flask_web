@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for
+from flask import Blueprint, render_template, redirect, url_for, request
 from flask_login import login_required, current_user
 
 from apps.board.forms import WriteBoardForm
@@ -14,7 +14,15 @@ bp = Blueprint(
 
 @bp.route('/')
 def index():
-  boards = Board.query.order_by(Board.created_at.desc()).all()
+  page = request.args.get('page', type=int, default=1)
+
+  boards = Board.query.order_by(Board.created_at.desc())
+
+  # paginate함수는 페이징처리가 관료된 pagination객체가 리턴
+  # items : 레코드들, total : 전체 레코드 수, per_page : 페이지당 나타낼 레코드 수
+  # page : 현재 페이지, prev_num : 이전 페이지 번호, next_num : 다음 페이지 번호
+  # has_prev : 이전 페이지 여부, has_next : 다음 페이지 여부
+  boards = boards.paginate(page=page, per_page=10)
 
   return render_template('board/index.html', boards=boards)
 
@@ -57,3 +65,24 @@ def edit(board_id):
     return redirect(url_for('board.index'))
 
   return render_template('board/edit.html', form=form, board=board)
+
+@bp.route('/delete/<board_id>')
+def delete(board_id):
+  board = Board.query.get(board_id)
+  db.session.delete(board)
+  db.session.commit()
+
+  return redirect(url_for('board.index'))
+
+
+@bp.route('/dummy')
+def make_dummy():
+  for i in range(300):
+    board = Board(
+      subject = f"임시 제목 - {i}",
+      content = f"임시 내용 - {i}",
+      user_id = 1
+    )
+
+    db.session.add(board)
+    db.session.commit()
